@@ -1,0 +1,2 @@
+[MASTER]
+init-hook="sys.path.append('C:\Users\Iulita\Facultate\An 3\Licență\ImageCraft\Backend/site-packages')"

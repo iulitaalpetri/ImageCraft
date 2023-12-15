@@ -21,4 +21,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path("", include("api.urls")),
     path("user/", include("user.urls")),
+    path("photo/", include("photo.urls")),
+    #path("object/", include("detected_object.urls")),
 ]

@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'api.apps.ApiConfig',
     'photo.apps.PhotoConfig',
-    'edited_photo.apps.EditedPhotoConfig',
     'person.apps.PersonConfig',
     'detected_object.apps.DetectedObjectConfig',
     'detected_face.apps.DetectedFaceConfig',

@@ -22,5 +22,6 @@ urlpatterns = [
     path("", include("api.urls")),
     path("user/", include("user.urls")),
     path("photo/", include("photo.urls")),
+    path("detected_face/", include("detected_face.urls")),
     #path("object/", include("detected_object.urls")),
 ]

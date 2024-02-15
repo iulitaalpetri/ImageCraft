@@ -7,7 +7,9 @@ from rest_framework.decorators import api_view
 from rest_framework.exceptions import AuthenticationFailed
 from rest_framework.views import Response
 from user.models import User
-from edited_photo.models import EditedPhoto
+from PIL import Image
+import tempfile
+
 
 from .models import Photo
 from .serializers import PhotoSerializer
@@ -46,8 +48,7 @@ def postPhoto(request):
     # Set the default values for the Photo model
     photo_data = {
         "image": request.data["image"],
-        "date": None,  # This will be automatically set to the current date and time
-        "edited": False,
+        "date": None,  # This will be automatically set to the current date and time      
     }
 
     photo = Photo.objects.create(**photo_data)
@@ -94,3 +95,51 @@ def deletePhoto(request, id):
         "status": status.HTTP_200_OK,
     }
     return Response(response, status=status.HTTP_200_OK)
+
+# edit a photo and apply multiple edits according to the request, but the requests don t come at once, I want to apply and edit, then another, then another
+# ------------------------------------------------------- edit photo -------------------------------------------------------
+# start an edit session
+def start_edit_session(request, id):
+    
+    temp_dir = tempfile.mkdtemp()
+    photo = Photo.objects.filter(id=id).first()
+
+    original_image_path = photo.image.path
+    request.session['edit_session'] = {
+        'original_image_path': original_image_path,
+        'current_image_path': original_image_path,  
+        'temp_dir': temp_dir,
+        'states': [original_image_path],
+        'current_state': 0, 
+    }
+
+def add_state(request, new_image_path):
+    session_data = request.session['edit_session']
+    session_data['states'] = session_data['states'][:session_data['current_state'] + 1] 
+    session_data['states'].append(new_image_path)
+    session_data['current_state'] += 1
+    session_data['current_image_path'] = new_image_path
+    request.session['edit_session'] = session_data
+
+
+def apply_edits(current_image, edit_type, edit_params):
+    with Image.open(current_image) as img:
+        if edit_type == "crop":
+            edited_image = img.crop(edit_params)
+        elif edit_type == "rotate":
+            edited_image = img.rotate(edit_params)
+
+    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
+    edited_image.save(temp_file, format="JPEG")
+    return temp_file.name
+
+
+@api_view(["POST"])
+def save_changes(request):
+    photo_id = request.data.get("photo_id")
+    edit_type = request.data.get("edit_type")
+    edit_
+
+
+
+

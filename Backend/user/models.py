@@ -4,7 +4,6 @@ from django.contrib.auth.models import AbstractUser, Group, Permission
 class User(AbstractUser):
     email = models.EmailField(max_length=100, unique=True)
     photos = models.ManyToManyField('photo.Photo', blank=True, related_name='user_photos')
-    edited_photos = models.ManyToManyField('edited_photo.EditedPhoto', blank=True, related_name='user_edited_photos')
     persons = models.ManyToManyField('person.Person', blank=True, related_name='user_persons')
 
     groups = models.ManyToManyField(Group, related_name='user_set_groups', blank=True)

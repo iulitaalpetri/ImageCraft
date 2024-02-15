@@ -4,7 +4,7 @@ from django.db import models
 class Photo(models.Model):
     image = models.ImageField(upload_to='images/photos/')
     date = models.DateTimeField(auto_now_add=True)
-    detected_objects = models.ManyToManyField('detected_object.DetectedObject', blank=True)
+    detected_objects = models.ManyToManyField('detected_object.DetectedObject', blank=True) # nu e bine
     detected_faces = models.ManyToManyField('detected_face.DetectedFace', blank=True)
 
 

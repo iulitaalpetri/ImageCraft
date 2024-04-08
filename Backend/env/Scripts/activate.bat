@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set VIRTUAL_ENV=C:\Users\Iulita\Facultate\An 3\Licență\ImageCraft\Backend\env
+set VIRTUAL_ENV=C:\Users\Iulita\Facultate\An 3\Licenta\ImageCraft\Backend\env
 
 if not defined PROMPT set PROMPT=$P$G
 

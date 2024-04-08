@@ -11,3 +11,4 @@ urlpatterns = [
     path("deletelogged", views.getDeleteLogged),
     path("delete/<int:id>", views.postDelete),
 ]
+

@@ -1,33 +1,38 @@
 import axios from "axios";
 import { User } from "../models/user";
 import { API_URL } from "../config";
+import { BASE_URL } from '@env';
 
-const BASE_URL = process.env.BASE_URL;
+
+const BACKEND_URL = process.env.BASE_URL;
+
+
+
+interface RegistrationData {
+  username: string;
+  email: string;
+  password: string;
+}
 
 interface RegistrationResponse {
-    id: string;
-    username: string;
-    email: string;
-  }
+  id: string;
+  username: string;
+  email: string;
+}
 
-
-export const registerUser = async (
-  username: string,
-  email: string,
-  password: string,
+export const registerUser = async(
+  userData: RegistrationData
 ): Promise<RegistrationResponse> => {
   try {
-    const response = await axios.post(`${BASE_URL}/register/`, {
-      username,
-      email,
-      password,
-    });
+    const response = await axios.post(`${BACKEND_URL}/user/register/`, userData);
     return response.data;
   } catch (error: any) {
     console.error('Registration error:', error);
     throw new Error(error.response?.data?.detail || 'An error occurred during registration');
   }
-};
+};    
+
+
 
 
 export const loginUser = async (
@@ -35,7 +40,7 @@ export const loginUser = async (
   password: string,
 ): Promise<User> => {
   try {
-    const response = await axios.post(`${BASE_URL}/login/`, {
+    const response = await axios.post(`${BACKEND_URL}/login/`, {
       email,
       password,
     });
@@ -48,7 +53,7 @@ export const loginUser = async (
 
 export const logoutUser = async (): Promise<void> => {
   try {
-    await axios.post(`${BASE_URL}/logout/`);
+    await axios.post(`${BACKEND_URL}/logout/`);
   } catch (error: any) {
     console.error('Logout error:', error);
     throw new Error(error.response?.data?.detail || 'An error occurred during logout');
@@ -65,7 +70,7 @@ interface UpdateUserData {
 // Function to update user data
 export const updateUser = async (userData: UpdateUserData): Promise<AxiosResponse<any>> => {
   try {
-    const response = await axios.patch(`${BASE_URL}/update/`, userData, {
+    const response = await axios.patch(`${BACKEND_URL}/update/`, userData, {
       withCredentials: true // This is necessary to send cookies with the request
     });
     return response;
@@ -78,7 +83,7 @@ export const updateUser = async (userData: UpdateUserData): Promise<AxiosRespons
 // Function to delete the logged user
 export const deleteUser = async (): Promise<AxiosResponse<any>> => {
   try {
-    const response = await axios.get(`${BASE_URL}/delete/`, {
+    const response = await axios.get(`${BACKEND_URL}/delete/`, {
       withCredentials: true // This is necessary to send cookies with the request
     });
     return response;

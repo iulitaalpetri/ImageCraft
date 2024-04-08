@@ -1,2 +1,5 @@
 #Secrets
 .env
+# settings.py from Backen folder
+Backend/settings.py
+

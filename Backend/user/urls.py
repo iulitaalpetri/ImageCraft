@@ -10,5 +10,6 @@ urlpatterns = [
     path("update", views.patchUpdate),
     path("deletelogged", views.getDeleteLogged),
     path("delete/<int:id>", views.postDelete),
+    path("verify", views.postCheckPassword),
 ]
 

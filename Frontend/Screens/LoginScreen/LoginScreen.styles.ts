@@ -1,3 +1,4 @@
+// LoginScreen.styles.ts
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -16,7 +17,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   button: {
-    backgroundColor: '#0c0c33',
+    backgroundColor: '#0c0c33', // Adjust this color if necessary to match your app's theme
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 25,
@@ -39,19 +40,8 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 14,
     marginBottom: 5,
-    alignSelf: 'flex-start',
-    marginLeft: '10%',
-  },
-  linkButton: {
-    marginTop: 15,
-    width: '80%',
-    alignSelf: 'center',
-  },
-  linkButtonText: {
-    color: '#0000ff', // Choose a color that signifies it's a link
-    fontSize: 16,
-    textAlign: 'center',
-    textDecorationLine: 'underline', // Underline to indicate it's clickable
+    alignSelf: 'center', // Changed to center align with the inputs better
+    width: '80%', // Match the width of the input fields
   },
 });
 

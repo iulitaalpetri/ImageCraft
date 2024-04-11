@@ -17,7 +17,7 @@ const HomeScreen = ({ navigation }) => {
     const [password, setPassword] = useState('');
     const [verifyPassword, setVerifyPassword] = useState('');
   const [errors, setErrors] = useState({ username: '', email: '', password: '', verifyPassword: '' });
-// ---------------------------------- profile press ----------------------------------
+// ---------------------------------- profile modal ----------------------------------
   const handleProfilePress = async () => {
     setIsLoading(true);
     try {
@@ -109,7 +109,7 @@ const HomeScreen = ({ navigation }) => {
       Alert.alert('Error', 'Passwords do not match.');
       return;
     }
-  
+    setIsLoading(true);
     try {
       const updateData = { username, email, password };
       await updateUser(updateData);
@@ -119,12 +119,27 @@ const HomeScreen = ({ navigation }) => {
       console.error('Update failed:', error);
       Alert.alert('Update Failed', error.toString());
     }
+    setIsLoading(false);
   };
 
   //---------------------------------- profile  ----------------------------------
 
+  // --- buttons ---
+  const handleTakePhotoPress = () => {
+    navigation.navigate('TakePhotoScreen');
+  }
+
+  const handleUploadPhotoPress = () => {
+    navigation.navigate('UploadPhotoScreen');
+  }
+
+  const handleGalleryPress = () => {
+    navigation.navigate('GalleryScreen');
+  }
+
   return (
     <View style={styles.container}>
+      <LoadingOverlay isLoading={isLoading} />
 
       <TouchableOpacity style={styles.headerRight} onPress={handleProfilePress}>
         <Image source={require('../../assets/user.png')} style={styles.image} />
@@ -279,7 +294,20 @@ const HomeScreen = ({ navigation }) => {
     </View>
   </Modal>
 
+  <View style={styles.buttonsContainer}>
+        <TouchableOpacity onPress={handleTakePhotoPress} style={styles.imageButton}>
+          <Image source={require('../../assets/cam.png')} style={styles.buttonImage} />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleUploadPhotoPress} style={styles.imageButton}>
+          <Image source={require('../../assets/upload.png')} style={styles.buttonImage} />
+        </TouchableOpacity>
+      </View>
 
+      <View style={styles.centerButtonContainer}>
+        <TouchableOpacity onPress={handleGalleryPress} style={styles.imageButton}>
+          <Image source={require('../../assets/gallery.png')} style={styles.buttonImage} />
+        </TouchableOpacity>
+      </View>
 
       
 

@@ -17,6 +17,13 @@ def postRegister(request):
     print("Request data:", request.data)
     serializer = UserSerializer(data=request.data)
 
+    # Check for existing username or email in other users
+    errors = {}
+    if User.objects.filter(username=request.data.get("username", "")).exists():
+        errors['username'] = "Username already exists!"
+    if User.objects.filter(email=request.data.get("email", "")).exists():
+        errors['email'] = "Email already exists!"
+
     if not serializer.is_valid():
         print("Validation errors:", serializer.errors)
         return Response(serializer.errors, status=400)
@@ -77,23 +84,32 @@ def patchUpdate(request):
     token = request.COOKIES.get("jwt")
     if not token:
         raise AuthenticationFailed("Not authenticated!")
-    else:
-        try:
-            payload = jwt.decode(
-                token, config("DJANGO_JWT_SECRET"), algorithms=["HS256"]
-            )
-        except jwt.ExpiredSignatureError:
-            raise AuthenticationFailed("Unauthenticated!")
-        user = User.objects.filter(id=payload["id"]).first()
-        serializer = UserSerializer(instance=user, data=request.data)
-        # veirfy if the username and email are , but search in all the other users besides the current one
-        if not serializer.is_valid():
-            print("Validation errors:", serializer.errors)
-            return Response(serializer.errors, status=400)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        print(serializer.data)
-        return Response(serializer.data)
+
+    try:
+        payload = jwt.decode(token, config("DJANGO_JWT_SECRET"), algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed("Unauthenticated!")
+
+    user = User.objects.filter(id=payload["id"]).first()
+    if not user:
+        return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # Check for existing username or email in other users
+    errors = {}
+    if User.objects.filter(username=request.data.get("username", "")).exclude(id=user.id).exists():
+        errors['username'] = "Username already exists!"
+    if User.objects.filter(email=request.data.get("email", "")).exclude(id=user.id).exists():
+        errors['email'] = "Email already exists!"
+
+    if errors:
+        return Response(errors, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer = UserSerializer(instance=user, data=request.data)
+    if not serializer.is_valid():
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    serializer.save()
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 @api_view(["GET"])
 def getDeleteLogged(request):

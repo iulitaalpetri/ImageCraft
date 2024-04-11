@@ -23,6 +23,28 @@ const styles = StyleSheet.create({
     height: 60, // Adjust as needed
     resizeMode: 'contain',
   },
+  buttonsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    padding: 10,
+  },
+  centerButtonContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 10,
+  },
+  imageButton: {
+    width: 170,
+    height: 170,
+    justifyContent: 'center',
+    alignItems: 'center',
+    margin: 10,
+  },
+  buttonImage: {
+    width: '100%',
+    height: '100%',
+  },
 });
 
 const modalStyles = StyleSheet.create({

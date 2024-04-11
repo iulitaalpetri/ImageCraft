@@ -1,7 +1,6 @@
 from rest_framework import serializers
 
 from .models import User
-from django.contrib.auth.models import User
 from rest_framework.exceptions import ValidationError
 import jwt
 
@@ -17,15 +16,14 @@ class UserSerializer(serializers.ModelSerializer):
 
     
 
-    def validate_email(self, value):
-        # Check if any user already exists with this email
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("A user with that email already exists.")
-        return value
+    # def validate_email(self, value):
+    #     # Check if any user already exists with this email
+    #     if User.objects.filter(email=value).exists():
+    #         raise serializers.ValidationError("A user with that email already exists.")
+    #     return value
     
-    def validate_email_update(self, value):
-        # --- to do
-
+    
+                  
 
     def create(self, validated_data):
         password = validated_data.pop("password", None)

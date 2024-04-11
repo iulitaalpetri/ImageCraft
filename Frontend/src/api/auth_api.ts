@@ -9,7 +9,7 @@ import {TOKEN_KEY} from "../utils/storage-handler";
 
 
 
-//const BACKEND_URL = "http://:8000";
+const BACKEND_URL = "http://:8000";
 // nu uita sa bagi url ul in secretsssss!!!!!---------------------------------------------
 
 
@@ -196,9 +196,9 @@ export const updateUser = async (updateData: UpdateData): Promise<User> => {
       // Construct a detailed error message based on the backend response
       let errorMessage = 'Error updating user account';
       if (errors.email) {
-        errorMessage = `Email error: ${errors.email[0]}`;
+        errorMessage = `Email error: ${errors.email}`;
       } else if (errors.username) {
-        errorMessage = `Username error: ${errors.username[0]}`;
+        errorMessage = `Username error: ${errors.username}`;
       } else if (typeof errors === 'string') {
         errorMessage = errors;  // Direct string error message from backend
       }

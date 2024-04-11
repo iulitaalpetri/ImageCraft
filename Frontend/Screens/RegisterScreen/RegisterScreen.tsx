@@ -11,7 +11,7 @@ const RegisterScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
   const [verifyPassword, setVerifyPassword] = useState('');
   const [errors, setErrors] = useState({ username: '', email: '', password: '', verifyPassword: '' });
-  const [isLoading, setIsLoading] = useState(false); // Add this line to manage loading state
+  const [isLoading, setIsLoading] = useState(false); 
 
   const validateForm = () => {
     let isValid = true;

@@ -23,7 +23,7 @@ const SplashScreen: React.FC<Props> = ({ navigation }) => {
     useEffect(() => {
       Animated.timing(fadeAnim, {
         toValue: 1, // Fade in to opacity: 1
-        duration: 3000, // 3 seconds
+        duration: 2000, 
         useNativeDriver: true, // Add this line
       }).start();
   

@@ -3,6 +3,7 @@ import { View, Image, Modal, Text, TouchableOpacity, ActivityIndicator, TextInpu
 import { styles, modalStyles } from './HomeScreen.styles';
 import { getUserData, logoutUser, deleteUser, checkPassword , updateUser} from '../../src/api/auth_api';
 import LoadingOverlay from '../../components/LoadingPage/LoadingPage';
+import NavBar from '../../components/NavBar/NavBar';
 
 
 const HomeScreen = ({ navigation }) => {
@@ -294,22 +295,13 @@ const HomeScreen = ({ navigation }) => {
     </View>
   </Modal>
 
-  <View style={styles.buttonsContainer}>
-        <TouchableOpacity onPress={handleTakePhotoPress} style={styles.imageButton}>
-          <Image source={require('../../assets/cam.png')} style={styles.buttonImage} />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={handleUploadPhotoPress} style={styles.imageButton}>
-          <Image source={require('../../assets/upload.png')} style={styles.buttonImage} />
-        </TouchableOpacity>
-      </View>
+  <View style={{ flex: 1 }}>
+                  {/* Place other content here to ensure it uses the space above the NavBar */}
 
-      <View style={styles.centerButtonContainer}>
-        <TouchableOpacity onPress={handleGalleryPress} style={styles.imageButton}>
-          <Image source={require('../../assets/gallery.png')} style={styles.buttonImage} />
-        </TouchableOpacity>
-      </View>
+  </View>
 
-      
+      <NavBar navigation={navigation} />
+
 
     </View>
   );

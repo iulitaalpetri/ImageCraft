@@ -1,20 +1,11 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import NavBar from '../../components/NavBar/NavBar';
 
-const GalleryScreen = ({navigation}) => {
+const FriendsScreen = () => {
   return (
     <View style={styles.container}>
-        <View style={{ flex: 1 }}>
-
       <Text style={styles.text}>This is a dummy page</Text>
-
-      </View>
-
-      <NavBar navigation={navigation} />
-
     </View>
-
   );
 };
 
@@ -31,4 +22,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default GalleryScreen;
+export default FriendsScreen;

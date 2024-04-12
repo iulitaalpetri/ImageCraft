@@ -11,6 +11,7 @@ import HomeScreen from './Screens/HomeScreen/HomeScreen';
 import TakePhotoScreen from './Screens/TakePhotoScreen/TakePhotoScreen';
 import UploadPhotoScreen from './Screens/UploadPhotoScreen/UploadPhotoScreen';
 import GalleryScreen from './Screens/GalleryScreen/GalleryScreen';
+import FriendsScreen from './Screens/FriendsScreen/FriendsScreen';
 
 
 const Stack = createStackNavigator();
@@ -27,6 +28,7 @@ const App = () => {
         <Stack.Screen name="TakePhotoScreen" component={TakePhotoScreen} />
         <Stack.Screen name="UploadPhotoScreen" component={UploadPhotoScreen} />
         <Stack.Screen name="GalleryScreen" component={GalleryScreen} />
+        <Stack.Screen name="FriendsScreen" component={FriendsScreen} />
 
       </Stack.Navigator>
     </NavigationContainer>

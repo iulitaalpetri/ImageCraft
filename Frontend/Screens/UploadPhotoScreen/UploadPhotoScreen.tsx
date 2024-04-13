@@ -1,25 +1,36 @@
+// UploadPhotoScreen.tsx
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { Button, View, Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
+import { useNavigation } from '@react-navigation/native';
+import styles from './UploadPhotoScreen.styles';
 
 const UploadPhotoScreen = () => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>This is a dummy page</Text>
-    </View>
-  );
-};
+    const navigation = useNavigation();
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f0f0f0'
-  },
-  text: {
-    fontSize: 20,
-    color: '#333'
-  }
-});
+    const pickImage = async () => {
+      let result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [4, 3],
+          quality: 1,
+      });
+
+      console.log("Image Picker Result:", result); // Check the entire result object
+
+
+      if (!result.cancelled && result.assets && result.assets.length > 0) {
+        const uri = result.assets[0].uri;
+        console.log("Image URI:", uri); // Ensure this logs correctly
+        navigation.navigate('PhotoPreviewScreen', { photoUri: uri });
+    }
+    };
+
+    return (
+        <View style={styles.container}>
+            <Button title="Select Photo" onPress={pickImage} />
+        </View>
+    );
+};
 
 export default UploadPhotoScreen;

@@ -37,7 +37,7 @@ const NavBar: React.FC<NavBarProps> = ({ navigation, activeScreen }) => {
       </TouchableOpacity>
       <TouchableOpacity style={getButtonStyle('TakePhotoScreen')} onPress={() => navigation.navigate('TakePhotoScreen')}>
         <FontAwesomeIcon icon={faCamera} style={getIconTextStyle('TakePhotoScreen')} />
-        <Text style={getIconTextStyle('TakePhotoScreen')}>Take Photo</Text>
+        <Text style={getIconTextStyle('TakePhotoScreen')}>Camera</Text>
       </TouchableOpacity>
       <TouchableOpacity style={getButtonStyle('UplaodPhotoScreen')} onPress={() => navigation.navigate('UploadPhotoScreen')}>
         <FontAwesomeIcon icon={faUpload} style={getIconTextStyle('UploadPhotoScreen')} />

@@ -125,7 +125,7 @@ def start_edit_session(request, id):
         return Response(response, status=status.HTTP_404_NOT_FOUND)
     if photo not in user.photos.all():
         response = {
-            "message": "You are not allowed to delete this photo!",
+            "message": "You are not allowed to edit this photo!",
             "status": status.HTTP_401_UNAUTHORIZED,
         }
         return Response(response, status=status.HTTP_401_UNAUTHORIZED)

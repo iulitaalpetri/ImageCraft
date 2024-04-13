@@ -12,6 +12,7 @@ import TakePhotoScreen from './Screens/TakePhotoScreen/TakePhotoScreen';
 import UploadPhotoScreen from './Screens/UploadPhotoScreen/UploadPhotoScreen';
 import GalleryScreen from './Screens/GalleryScreen/GalleryScreen';
 import FriendsScreen from './Screens/FriendsScreen/FriendsScreen';
+import PhotoPreviewScreen from './Screens/PhotoPreviewScreen/PhotoPreviewScreen';
 
 
 const Stack = createStackNavigator();
@@ -29,6 +30,7 @@ const App = () => {
         <Stack.Screen name="UploadPhotoScreen" component={UploadPhotoScreen} />
         <Stack.Screen name="GalleryScreen" component={GalleryScreen} />
         <Stack.Screen name="FriendsScreen" component={FriendsScreen} />
+        <Stack.Screen name="PhotoPreviewScreen" component={PhotoPreviewScreen} />
 
       </Stack.Navigator>
     </NavigationContainer>

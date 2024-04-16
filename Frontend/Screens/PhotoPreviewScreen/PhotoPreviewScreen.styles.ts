@@ -28,18 +28,25 @@ const styles = StyleSheet.create({
         
         
     },
-    backButtonText: {
-        fontSize: 16,
-        color: '#fff', // Black text color
-    },
-    saveButton: {
+    buttonContainer: {
+        flexDirection: 'row', // Align buttons horizontally
+        justifyContent: 'space-around', // Space buttons evenly
         position: 'absolute',
         bottom: 70,
-        padding: 10,
-        backgroundColor: '#0c0c33', // Light grey background for the button
-        borderRadius: 5,
+        width: '100%', // Ensure the container spans the width of the screen
     },
-
+    saveButton: {
+        padding: 10,
+        backgroundColor: '#0c0c33',
+        borderRadius: 5,
+        flex: 1, // Allow each button to take equal space
+        marginHorizontal: 7, // Add horizontal space between buttons
+    },
+    backButtonText: {
+        fontSize: 16,
+        color: '#fff',
+        textAlign: 'center', // Center text within the button
+    },
 });
 
 export default styles;

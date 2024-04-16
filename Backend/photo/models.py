@@ -7,5 +7,7 @@ class Photo(models.Model):
     detected_objects = models.ManyToManyField('detected_object.DetectedObject', blank=True) # nu e bine
     detected_faces = models.ManyToManyField('detected_face.DetectedFace', blank=True)
 
+    def get_image_path(self):
+        return self.image.path
 
 

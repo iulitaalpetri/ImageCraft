@@ -13,6 +13,10 @@ from django.http import JsonResponse
 import os
 from django.core.files import File
 from PIL import ImageEnhance
+import shutil
+import tempfile
+from django.conf import settings
+from django.http import JsonResponse
 
 
 from .models import Photo
@@ -100,11 +104,15 @@ def deletePhoto(request, id):
     }
     return Response(response, status=status.HTTP_200_OK)
 
-# edit a photo and apply multiple edits according to the request, but the requests don t come at once, I want to apply and edit, view the changes ,then another, then another
-# ------------------------------------------------------- edit photo -------------------------------------------------------
-# start an edit session
-def start_edit_session(request, id):
 
+
+
+
+
+
+# ---------------- edit -------------------------
+@api_view(["POST"])
+def start_edit_session(request, id):
     token = request.COOKIES.get("jwt")
     if not token:
         raise AuthenticationFailed("Unauthenticated!")
@@ -129,181 +137,409 @@ def start_edit_session(request, id):
             "status": status.HTTP_401_UNAUTHORIZED,
         }
         return Response(response, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+    # create temporary directory to store the edited states of the image
+
+    temp_dir_path = os.path.join(settings.MEDIA_ROOT, "temp_folders")
+    temp_dir = tempfile.mkdtemp(dir=temp_dir_path)  
     
-    temp_dir = tempfile.mkdtemp() 
-    # print the path of the temp dir
-    print(temp_dir)
+    request.session['temp_dir'] = temp_dir
 
-    original_image_path = photo.image.path
 
-    print(original_image_path)
-    request.session['edit_session'] = {
-        'original_image_path': original_image_path,
-        'current_image_path': original_image_path,  
-        'temp_dir': temp_dir,
-        'states': [original_image_path],
-        'current_state': 0, 
+    
+    request.session['photo_id'] = id
+    request.session['finalized'] = False
+    request.session['dismissed'] = False
+    request.current_state = 0
+    response = {
+        "message": "Edit session started!",
+        "status": status.HTTP_200_OK,
     }
 
-def add_state(request, new_image_path):
-    session_data = request.session['edit_session']
-    session_data['states'] = session_data['states'][:session_data['current_state'] + 1] 
-    session_data['states'].append(new_image_path)
-    session_data['current_state'] += 1
-    session_data['current_image_path'] = new_image_path
-    request.session['edit_session'] = session_data
-
-
-def apply_edits(current_image_path, edit_type, edit_params):
-
-
-
-    with Image.open(current_image_path) as img:
-        width, height = img.size
-
-        if edit_type == "crop":
-            # Ensure crop parameters are within the image dimensions
-            left = max(0, min(edit_params['left'], width))
-            upper = max(0, min(edit_params['top'], height))
-            right = max(left, min(edit_params['right'], width))
-            lower = max(upper, min(edit_params['bottom'], height))
-
-            # Validate that we have a positive area for the crop rectangle
-            if right <= left or lower <= upper:
-                return None  # Indicate invalid crop parameters
-
-            crop_tuple = (left, upper, right, lower)
-            edited_image = img.crop(crop_tuple)
-        elif edit_type == "rotate":
-            angle = edit_params['angle']
-            edited_image = img.rotate(angle)
-        elif edit_type == "resize":
-            new_width = edit_params['width']
-            new_height = edit_params['height']
-            edited_image = img.resize((new_width, new_height))
-        elif edit_type == "flip":
-            if edit_params['direction'] == 'horizontal':
-                edited_image = img.transpose(Image.FLIP_LEFT_RIGHT)
-            elif edit_params['direction'] == 'vertical':
-                edited_image = img.transpose(Image.FLIP_TOP_BOTTOM)
-        elif edit_type == "brightness":
-            enhancer = ImageEnhance.Brightness(img)
-            factor = edit_params['factor']  # Should be a float; 1.0 means no change
-            edited_image = enhancer.enhance(factor)
-
+    request.session['original_image'] = photo.image.path
+    # make a copy of the original image in the temporary directory
+    shutil.copy(request.session['original_image'], request.session['temp_dir'])
+    print("dupa copiere")
+    request.session['original_image'] = request.session['temp_dir'] + "/" + os.path.basename(request.session['original_image'])
+    request.session['current_image'] = request.session['original_image']
+    request.session['states'] = [request.session['original_image']]
+    request.session['current_state'] = 0
     
-
-
-    temp_file = tempfile.NamedTemporaryFile(delete=False, suffix=".jpg")
-    #print the path of the temp file
-    edited_image.show()
-    edited_image.save(temp_file.name, format="JPEG")
-
-    return temp_file.name
-
+    return Response(response, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
-def save_changes(request, photo_id):
-
-    edit_type = request.data["edit_type"]
-    edit_params = request.data["edit_params"]
-
-    if ('edit_session' not in request.session) or (request.session['edit_session']['original_image_path'] != Photo.objects.get(id=photo_id).image.path): # daca inca nu s a inceput o sesiune sau daca id ul pozei este diferit, voi incepe o sesiune noua        
-        start_edit_session(request, photo_id)
-    
-    current_image_path  = request.session['edit_session']['current_image_path']
-    new_image_path = apply_edits(current_image_path, edit_type, edit_params)
-    add_state(request, new_image_path)
-
-    return JsonResponse({"message": f"Image successfully edited with {edit_type}.", "new_image_path": new_image_path})
-
-
-@api_view(["PATCH"])
-def finalize_edits(request, photo_id):
-    session_data = request.session.get('edit_session', None)
-    if session_data is None:
-        return JsonResponse({"message": "No edits have been made."}, status=400)
-
-    final_image_path = session_data['current_image_path']  # Ensure this is the updated path
-    print(final_image_path, "current image path in finalize edits ----- dsv-dasfAJFBJAJDA-FSDFDJBSHVFEBJKEDHWJBFHDWJBHVU")
+def dismiss_changes(request):
+    token = request.COOKIES.get("jwt")
+    if not token:
+        raise AuthenticationFailed("Unauthenticated!")
 
     try:
-        photo = Photo.objects.get(id=photo_id)
-    except Photo.DoesNotExist:
-        return Response({"error": "Photo not found"}, status=404)
+        payload = jwt.decode(token, config("DJANGO_JWT_SECRET"), algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed("Unauthenticated!")
 
-    # Save the final edited image
-    with open(final_image_path, 'rb') as img:
-        photo.image.save(os.path.basename(final_image_path), File(img), save=True)
+    user = User.objects.filter(id=payload["id"]).first()
+    photo = Photo.objects.filter(id=request.session['photo_id']).first()
 
-    # Cleanup logic here...
+    if not photo:
+        response = {
+            "message": "Photo does not exist!",
+            "status": status.HTTP_404_NOT_FOUND,
+        }
+        return Response(response, status=status.HTTP_404_NOT_FOUND)
+    if photo not in user.photos.all():
+        response = {
+            "message": "You are not allowed to edit this photo!",
+            "status": status.HTTP_401_UNAUTHORIZED,
+        }
+        return Response(response, status=status.HTTP_401_UNAUTHORIZED)
 
-    return JsonResponse({"message": "Photo updated with final edits."})
+    request.session['dismissed'] = True
+    request.session['finalized'] = True
+    # delete the temporary directory
+    shutil.rmtree(request.session['temp_dir'])
 
-# @api_view(["PATCH"])
-# def finalize_edits(request, photo_id):
-#     session_data = request.session.get('edit_session', None)
-#     if session_data is None:
-#         return JsonResponse({"message": "No edits have been made."}, status=400)
 
-#     try:
-#         photo = Photo.objects.get(id=photo_id)
-#     except Photo.DoesNotExist:
-#         return Response({"error": "Photo not found"}, status=404)
+    response = {
+        "message": "Changes dismissed!",
+        "status": status.HTTP_200_OK,
+    }
+    return Response(response, status=status.HTTP_200_OK)
 
-#     final_image_path = session_data['current_image_path']
 
-#     with open(final_image_path, 'rb') as img:
-#                 photo.image.save(os.path.basename(final_image_path), File(img), save=True)
+@api_view(["POST"])
+def crop_image(request):
+    token = request.COOKIES.get("jwt")
+    if not token:
+        raise AuthenticationFailed("Unauthenticated!")
 
-#     temp_dir = session_data.get('temp_dir')
-#     if temp_dir and os.path.isdir(temp_dir):
-#         shutil.rmtree(temp_dir)  
+    try:
+        payload = jwt.decode(token, config("DJANGO_JWT_SECRET"), algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed("Unauthenticated!")
 
-#     del request.session['edit_session']
-#     request.session.modified = True  
+    user = User.objects.filter(id=payload["id"]).first()
+    photo = Photo.objects.filter(id=request.session['photo_id']).first()
 
+
+    if not photo:
+        response = {
+            "message": "Photo does not exist!",
+            "status": status.HTTP_404_NOT_FOUND,
+        }
+        return Response(response, status=status.HTTP_404_NOT_FOUND)
+    
+    if photo not in user.photos.all():
+        response = {
+            "message": "You are not allowed to edit this photo!",
+            "status": status.HTTP_401_UNAUTHORIZED,
+        }
+        return Response(response, status=status.HTTP_401_UNAUTHORIZED)
 
     
-#     return JsonResponse({"message": "Photo updated with final edits."})
+
+    image = Image.open(request.session['current_image'])
+    print(image.size)
+
+    x = request.data['x']
+    y = request.data['y']
+    width = request.data['width']
+    height = request.data['height']
+    # validate the parameters
+    if x < 0 or x >= image.size[0]:
+        response = {
+            "message": "Invalid x coordinate!",
+            "status": status.HTTP_400_BAD_REQUEST,
+        }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    if y < 0 or y >= image.size[1]:
+        response = {
+            "message": "Invalid y coordinate!",
+            "status": status.HTTP_400_BAD_REQUEST,
+        }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    
+    if width <= 0 or x + width > image.size[0]:
+        response = {
+            "message": "Invalid width!",
+            "status": status.HTTP_400_BAD_REQUEST,
+        }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    if height <= 0 or y + height > image.size[1]:
+        response = {
+            "message": "Invalid height!",
+            "status": status.HTTP_400_BAD_REQUEST,
+        }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    left = x
+    upper = y
+    right = x + width
+    lower = y + height
+    
+    cropped_image = image.crop((left, upper, right, lower))
+
+    # save the cropped image in the temporary directory
+    request.session['current_state'] += 1
+    print(request.session['current_state'])
 
 
-# ------------------ undo edit -------------------
-def undo_edit(request):
-    session_data = request.session.get('edit_session', None)
-    if session_data is None or session_data['current_state'] == 0:# daca nu e sesiune sau nu s au fct editari
-        return False, None
-
-
-    session_data = request.session.get('edit_session', None)
-
-    session_data['current_state'] -= 1
-    current_image_path = session_data['states'][session_data['current_state']]
-    current_image = Image.open(current_image_path)
-    print(current_image_path, "current image path in unod ----- dsv-dasfAJFBJAJDA-FSDFDJBSHVFEBJKEDHWJBFHDWJBHVU")
-    current_image.show()
-    request.session['edit_session'] = session_data
-    request.session.modified = True  
-    request.session.save()
+    cropped_image.save(request.session['temp_dir']  + '/' + str(request.session['current_state']) + ".jpg")
+    print(request.session['temp_dir'] + '/'+ str(request.session['current_state']) + ".jpg")
+    request.session['current_image'] = request.session['temp_dir'] + '/'+ str(request.session['current_state']) + ".jpg"
 
     
-    return True, current_image_path
 
+    request.session['states'].append(request.session['current_image'])
+     
+    cropped_image.show()
+
+
+
+
+    response = {
+        "message": "Image cropped!",
+        "status": status.HTTP_200_OK,
+        "current_uri": request.session['current_image']
+    }
+    return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def rotate_image(request):
+    angle = request.data['angle']
+
+    image = Image.open(request.session['current_image'])
+    rotated_image = image.rotate(angle)
+    print("dupa rotire")
+
+    # save the rotated image in the temporary directory
+    request.session['current_state'] += 1
+    rotated_image.save(request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg")
+    request.session['current_image'] = request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg"
+    request.session['states'].append(request.session['current_image'])
+    rotated_image.show()
+
+    response = {
+        "message": "Image rotated!",
+        "status": status.HTTP_200_OK,
+        "current_uri": request.session['current_image']
+    }
+    return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def resize_image(request):
+    width = request.data['width']
+    height = request.data['height']
+
+    image = Image.open(request.session['current_image'])
+    resized_image = image.resize((width, height))
+
+    # save the resized image in the temporary directory
+    request.session['current_state'] += 1
+    resized_image.save(request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg")
+    request.session['current_image'] = request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg"
+    request.session['states'].append(request.session['current_image'])
+    resized_image.show()
+
+    response = {
+        "message": "Image resized!",
+        "status": status.HTTP_200_OK,
+        "current_uri": request.session['current_image']
+    }
+    return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def flip_image(request):
+    if request.data['axis'] == 'horizontal':
+        axis = 0
+    else:
+        axis = 1
+
+    image = Image.open(request.session['current_image'])
+    flipped_image = image.transpose(axis)
+
+    # save the flipped image in the temporary directory
+    request.session['current_state'] += 1
+    flipped_image.save(request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg")
+    request.session['current_image'] = request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg"
+    request.session['states'].append(request.session['current_image'])
+    flipped_image.show()
+
+    response = {
+        "message": "Image flipped!",
+        "status": status.HTTP_200_OK,
+        "current_uri": request.session['current_image']
+    }
+
+    return Response(response, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+def brightness_image(request):
+    factor = request.data['factor']
+
+    image = Image.open(request.session['current_image'])
+    enhancer = ImageEnhance.Brightness(image)
+    brightened_image = enhancer.enhance(factor)
+
+    # save the brightened image in the temporary directory
+    request.session['current_state'] += 1
+    brightened_image.save(request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg")
+    request.session['current_image'] = request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg"
+    request.session['states'].append(request.session['current_image'])
+    brightened_image.show()
+
+    response = {
+        "message": "Image brightened!",
+        "status": status.HTTP_200_OK,
+        "current_uri": request.session['current_image']
+    }
+
+    return Response(response, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+def contrast_image(request):
+    factor = request.data['factor']
+
+    image = Image.open(request.session['current_image'])
+    enhancer = ImageEnhance.Contrast(image)
+    contrasted_image = enhancer.enhance(factor)
+
+    # save the contrasted image in the temporary directory
+    request.session['current_state'] += 1
+    contrasted_image.save(request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg")
+    request.session['current_image'] = request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg"
+    request.session['states'].append(request.session['current_image'])
+    contrasted_image.show()
+
+    response = {
+        "message": "Image contrasted!",
+        "status": status.HTTP_200_OK,
+        "current_uri": request.session['current_image']
+    }
+
+    return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def sharpness_image(request):
+    factor = request.data['factor']
+
+    image = Image.open(request.session['current_image'])
+    enhancer = ImageEnhance.Sharpness(image)
+    sharpened_image = enhancer.enhance(factor)
+
+    # save the sharpened image in the temporary directory
+    request.session['current_state'] += 1
+    sharpened_image.save(request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg")
+    request.session['current_image'] = request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg"
+    request.session['states'].append(request.session['current_image'])
+    sharpened_image.show()
+
+    response = {
+        "message": "Image sharpened!",
+        "status": status.HTTP_200_OK,
+        "current_uri": request.session['current_image']
+    }
+
+    return Response(response, status=status.HTTP_200_OK)
+
+@api_view(["POST"])
+def color_image(request):
+    #convert to grayscale
+    image = Image.open(request.session['current_image'])
+    grayscale_image = image.convert('L')
+
+    # save the grayscale image in the temporary directory
+    request.session['current_state'] += 1
+    grayscale_image.save(request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg")
+    request.session['current_image'] = request.session['temp_dir'] + '/' + str(request.session['current_state']) + ".jpg"
+    request.session['states'].append(request.session['current_image'])
+    grayscale_image.show()
+
+    response = {
+        "message": "Image converted to grayscale!",
+        "status": status.HTTP_200_OK,
+        "current_uri": request.session['current_image']
+    }
+
+    return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(["POST"])
+def save_changes(request):
+    token = request.COOKIES.get("jwt")
+    if not token:
+        raise AuthenticationFailed("Unauthenticated!")
+
+    try:
+        payload = jwt.decode(token, config("DJANGO_JWT_SECRET"), algorithms=["HS256"])
+    except jwt.ExpiredSignatureError:
+        raise AuthenticationFailed("Unauthenticated!")
+
+    user = User.objects.filter(id=payload["id"]).first()
+    photo = Photo.objects.filter(id=request.session['photo_id']).first()
+
+    if not photo:
+        response = {
+            "message": "Photo does not exist!",
+            "status": status.HTTP_404_NOT_FOUND,
+        }
+        return Response(response, status=status.HTTP_404_NOT_FOUND)
+    if photo not in user.photos.all():
+        response = {
+            "message": "You are not allowed to edit this photo!",
+            "status": status.HTTP_401_UNAUTHORIZED,
+        }
+        return Response(response, status=status.HTTP_401_UNAUTHORIZED)
+
+    # save the final image in the media directory
+    final_image_path = os.path.join(settings.MEDIA_ROOT, "images/photos", os.path.basename(request.session['original_image']))
+    
+    shutil.copy(request.session['current_image'], final_image_path)
+    
+    # delete the temporary directory
+    shutil.rmtree(request.session['temp_dir'])
+
+    request.session['finalized'] = True
+
+    #show photo with photo.image.path
+    
+
+
+    response = {
+        "message": "Changes saved!",
+        "status": status.HTTP_200_OK,
+    }
+    return Response(response, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
 def undo_changes(request):
-    success, current_image_path = undo_edit(request)
-    if not success:
-        return JsonResponse({"message": "No more edits to undo."}, status=400)
+    if request.session['current_state'] == 0:
+        response = {
+            "message": "No more changes to undo!",
+            "status": status.HTTP_400_BAD_REQUEST,
+        }
+        return Response(response, status=status.HTTP_400_BAD_REQUEST)
 
+    request.session['current_state'] -= 1
+    request.session['current_image'] = request.session['states'][request.session['current_state']]
+    request.session['states'].pop()
     
-    return JsonResponse({"message": "Undo successful.", "current_image_path": current_image_path})
+    response = {
+        "message": "Undo successful!",
+        "status": status.HTTP_200_OK,
+        "current_uri": request.session['current_image']
+    }
 
-
-
-
+    return Response(response, status=status.HTTP_200_OK)
 
 
     

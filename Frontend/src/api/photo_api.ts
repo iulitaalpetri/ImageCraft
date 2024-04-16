@@ -46,6 +46,8 @@ export const uploadPhoto = async (photoData: PhotoData): Promise<PhotoResponse> 
         'Content-Type': 'multipart/form-data',
       },
     });
+    console.log(response.data)
+
     return response.data;
   } catch (error: any) {
     // Handle errors
@@ -53,5 +55,68 @@ export const uploadPhoto = async (photoData: PhotoData): Promise<PhotoResponse> 
       throw error.response.data;
     }
     throw new Error('An error occurred during photo upload');
+  }
+};
+
+
+// --- edit ---
+
+interface StartEditSessionResponse {
+  message: string;
+  status: number;
+}
+
+
+
+export const startEditSession = async (photoId: number): Promise<StartEditSessionResponse> => {
+
+  const token = await SecureStore.getItemAsync('jwt');
+
+  try {
+    const response = await axios.post<StartEditSessionResponse>(
+      `${BACKEND_URL}/photo/startedit/${photoId}`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Use the JWT token for authorization
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+
+
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to start edit session');
+  }
+};
+
+interface DismissChangesResponse {
+  message: string;
+  status: number;
+}
+
+
+export const dismissChanges = async (photoId: number): Promise<DismissChangesResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');
+
+  try {
+    const response = await axios.post<DismissChangesResponse>(
+      `${BACKEND_URL}/photo/dismiss`,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Use the JWT token for authorization
+        },
+      }
+    );
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to dismiss changes');
   }
 };

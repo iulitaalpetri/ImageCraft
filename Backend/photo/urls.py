@@ -17,6 +17,7 @@ urlpatterns = [
     path("sharpness", views.sharpness_image),
     path("color", views.color_image),
     path("save", views.save_changes),
+    path("currenturi", views.get_current_uri),
     
 
     path("undo", views.undo_changes),

@@ -1,14 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Image, Text, TouchableOpacity, StyleSheet, Modal, TextInput, Button, Alert, ScrollView } from 'react-native';
 import MaterialIcons from 'react-native-vector-icons/MaterialIcons';
 import { useNavigation } from '@react-navigation/native';
 import styles from './EditPhotoScreen.styles';
-import { dismissChanges } from '../../src/api/photo_api';
-
+import { dismissChanges, getCurrentUri , convertToGrayscale, saveChanges, undoChanges} from '../../src/api/photo_api';
+import CropModal  from '../../components/EditModals/CropModal';
+import RotateModal from '../../components/EditModals/RotateModal';
+import ResizeModal from '../../components/EditModals/ResizeModal';
+import FlipImageModal from '../../components/EditModals/FlipModal';
+import BrightnessModal from '../../components/EditModals/BrightnessModal';
+import ContrastModal from '../../components/EditModals/ContrastModal';
+import SharpnessModal from '../../components/EditModals/SharpnessModal';
 
 const EditPhotoScreen = ({ route }) => {
-    const { photoId,  photoUri } = route.params;
+    const { photoId,  initialPhotoUri } = route.params;
     const [showConfirmModal, setShowConfirmModal] = useState(false);
+    const [activeModal, setActiveModal]= useState(null);
+    const [currentUri, setCurrentUri] = useState(initialPhotoUri);
+
 
     const editActions = [
         { id: 1, name: 'Crop', icon: 'crop' },
@@ -22,7 +31,41 @@ const EditPhotoScreen = ({ route }) => {
         { id: 9, name: 'Denoise', icon: 'blur-on' },
     ];
 
+    const updateCurrentUri = async () => {
+        try {
+            const response = await getCurrentUri();
+            
+            setCurrentUri(response.current_uri);
+        } catch (error) {
+            Alert.alert('Error', 'Failed to fetch the current image.');
+        }
+    };
+    
+    useEffect(() => {
+        updateCurrentUri();
+    }, []);
+
+
+
     const navigation = useNavigation();
+
+    const applyGrayscale = async () => {
+        try {
+            const response = await convertToGrayscale(photoId);
+            Alert.alert('Success', response.message);
+            updateCurrentUri(); // Update the URI to reflect the new grayscale image
+        } catch (error) {
+            Alert.alert('Error', error.message || 'Failed to apply grayscale');
+        }
+    };
+
+    const handleEditAction = (action) => {
+        if (action === 'Grayscale') {
+            applyGrayscale();
+        } else {
+            setActiveModal(action);
+        }
+    };
 
     const handleDismissAndLeave = async () => {
         try {
@@ -34,24 +77,62 @@ const EditPhotoScreen = ({ route }) => {
     }
 };   
 
+    const handleUndoChanges = async () => {
+        try {
+            await undoChanges();
+            updateCurrentUri();
+        } catch (error) {
+            Alert.alert('Error', error.message || 'Failed to undo changes');
+        }
+    };
+
+
+const handleSaveChanges = async () => {
+    try {
+        const response = await saveChanges();
+        Alert.alert('Success', response.message);
+        // Optionally navigate the user away or refresh the screen
+        navigation.navigate('HomeScreen'); // or any other screen as necessary
+    } catch (error) {
+        Alert.alert('Error', error.message || 'Failed to save changes');
+    }
+};
+
+
     return (
         <View style={styles.container}>
             <TouchableOpacity style={styles.backButton} onPress={() => setShowConfirmModal(true)}>
                 <Text style={styles.backButtonText}>Back</Text>
         </TouchableOpacity>
 
-            <Image source={{ uri: photoUri }} style={styles.image} />
-            <TouchableOpacity style={styles.saveButton}>
+        <TouchableOpacity style={styles.undoButton}  onPress ={handleUndoChanges}>
+                <MaterialIcons name="undo" size={24} color="#fff" />
+            </TouchableOpacity>
+
+            <Image source={{ uri: currentUri }} style={styles.image} />     
+
+            <TouchableOpacity style={styles.saveButton} onPress={handleSaveChanges}>
                 <Text style={styles.saveButtonText}>Save Edits</Text>
             </TouchableOpacity>
             <ScrollView horizontal style={styles.editBar} showsHorizontalScrollIndicator={false}>
-                {editActions.map(action => (
-                    <TouchableOpacity key={action.id} style={styles.editButton}>
+            {editActions.map(action => (
+                    <TouchableOpacity key={action.id} style={styles.editButton} onPress={() => handleEditAction(action.name)}>
                         <MaterialIcons name={action.icon} size={24} color="#fff" />
                         <Text style={styles.editButtonText}>{action.name}</Text>
                     </TouchableOpacity>
                 ))}
             </ScrollView>
+            {activeModal === 'Crop' && <CropModal visible={activeModal === 'Crop'} onClose={() => setActiveModal(null)} updateCurrentUri={updateCurrentUri}/>}
+            {activeModal === 'Rotate' && <RotateModal visible={activeModal === 'Rotate'} onClose={() => setActiveModal(null)} updateCurrentUri={updateCurrentUri} />}
+            {activeModal === 'Resize' && <ResizeModal visible={activeModal === 'Resize'} onClose={() => setActiveModal(null)} updateCurrentUri={updateCurrentUri} />}
+            {activeModal === 'Flip' && <FlipImageModal visible={activeModal === 'Flip'} onClose={() => setActiveModal(null)} updateCurrentUri={updateCurrentUri} />}
+            {activeModal === 'Brightness' && <BrightnessModal visible={activeModal === 'Brightness'} onClose={() => setActiveModal(null)} updateCurrentUri={updateCurrentUri} />}
+            {activeModal === 'Contrast' && <ContrastModal visible={activeModal === 'Contrast'} onClose={() => setActiveModal(null)} updateCurrentUri={updateCurrentUri} />}
+            {activeModal === 'Sharpness' && <SharpnessModal visible={activeModal === 'Sharpness'} onClose={() => setActiveModal(null)} updateCurrentUri={updateCurrentUri} />}
+
+            
+
+
 
             <Modal
                 animationType="slide"
@@ -71,5 +152,6 @@ const EditPhotoScreen = ({ route }) => {
         </View>
     );
 };
+
 
 export default EditPhotoScreen;

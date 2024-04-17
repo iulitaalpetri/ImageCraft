@@ -93,7 +93,17 @@ const styles = StyleSheet.create({
     modalText : {
         marginBottom: 15,
         textAlign: 'center',
-    }
+    },
+    undoButton: {
+        position: 'absolute',
+        top: 40,
+        right: 20,
+        padding: 10,
+        backgroundColor: '#f55',
+        borderRadius: 5,
+}
+
 });
+
 
 export default styles;

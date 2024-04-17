@@ -1,6 +1,7 @@
 import datetime
 import shutil
 import jwt
+import base64
 from decouple import AutoConfig
 from rest_framework import status
 from rest_framework.decorators import api_view
@@ -17,6 +18,8 @@ import shutil
 import tempfile
 from django.conf import settings
 from django.http import JsonResponse
+from django.conf import settings
+
 
 
 from .models import Photo
@@ -163,7 +166,14 @@ def start_edit_session(request, id):
     shutil.copy(request.session['original_image'], request.session['temp_dir'])
     print("dupa copiere")
     request.session['original_image'] = request.session['temp_dir'] + "/" + os.path.basename(request.session['original_image'])
+    with open(request.session['original_image'], "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read())
+        request.session['current_image_base64'] = encoded_string.decode('utf-8')
+
+
     request.session['current_image'] = request.session['original_image']
+    # save the base64 of the original image do i can use it in the frontend
+    # request.session['current_image_base_64'] = 
     request.session['states'] = [request.session['original_image']]
     request.session['current_state'] = 0
     
@@ -208,6 +218,52 @@ def dismiss_changes(request):
         "status": status.HTTP_200_OK,
     }
     return Response(response, status=status.HTTP_200_OK)
+
+
+# a get current uri for my edit page to display the current edits after making them
+# @api_view(["GET"])
+# def get_current_uri(request):
+#     response = {
+#         "message": "Current uri!",
+#         "status": status.HTTP_200_OK,
+#         "current_uri": request.session['current_image']
+#     }
+#     print("uri curent de acummmm")
+#     print(response["current_uri"])
+    
+#     return Response(response, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+def get_current_uri(request):
+    # Assuming `current_image` holds the absolute path
+    if 'current_image' in request.session:
+        media_root = settings.MEDIA_ROOT.replace('\\', '/')  # Ensure consistent path separators
+        current_image_path = request.session['current_image'].replace('\\', '/')
+        if current_image_path.startswith(media_root):
+            relative_path = current_image_path[len(media_root):]
+            web_accessible_url = settings.MEDIA_URL + relative_path.lstrip('/')
+            response = {
+                "message": "Current URI",
+                "status": status.HTTP_200_OK,
+                "current_uri": request.build_absolute_uri(web_accessible_url)  # Create full URL
+            }
+
+            print(response["current_uri"])
+        else:
+            response = {
+                "message": "Image path is not valid",
+                "status": status.HTTP_400_BAD_REQUEST,
+                "current_uri": None
+            }
+    else:
+        response = {
+            "message": "No image in session",
+            "status": status.HTTP_404_NOT_FOUND,
+            "current_uri": None
+        }
+    
+    return Response(response, status=response["status"])
+
 
 
 @api_view(["POST"])
@@ -424,7 +480,7 @@ def contrast_image(request):
         "current_uri": request.session['current_image']
     }
 
-    return Response(response, status=status.HTTP_200_OK)
+    return Response(response, status=status.HTTP_200_OK)    
 
 
 @api_view(["POST"])
@@ -501,7 +557,6 @@ def save_changes(request):
 
     # save the final image in the media directory
     final_image_path = os.path.join(settings.MEDIA_ROOT, "images/photos", os.path.basename(request.session['original_image']))
-    
     shutil.copy(request.session['current_image'], final_image_path)
     
     # delete the temporary directory
@@ -517,6 +572,7 @@ def save_changes(request):
         "message": "Changes saved!",
         "status": status.HTTP_200_OK,
     }
+    print(response)
     return Response(response, status=status.HTTP_200_OK)
 
 

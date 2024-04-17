@@ -93,6 +93,362 @@ export const startEditSession = async (photoId: number): Promise<StartEditSessio
   }
 };
 
+// ---get current uri ---
+interface CurrentUriResponse{
+  message : string;
+  status: number;
+  current_uri: string;
+  current_base64: string;
+
+}
+
+
+
+export const getCurrentUri = async (): Promise<CurrentUriResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');
+
+  try {
+    const response = await axios.get<CurrentUriResponse>(
+      `${BACKEND_URL}/photo/currenturi`,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Use the JWT token for authorization
+        },
+      }
+    );
+  
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to get current uri');
+  }
+}
+
+
+//---- crop ----
+interface CropParams {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
+interface CropResponse {
+  message: string;
+  status: number;
+  current_uri: string;
+}
+
+export const cropImage = async (photoId: number, cropParams: CropParams): Promise<CropResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');
+
+  try {
+    const response = await axios.post<CropResponse>(
+      `${BACKEND_URL}/photo/crop`,
+      cropParams,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Use the JWT token for authorization
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    print(response.data)
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to crop the image');
+  }
+};  
+
+
+// ---- rotate ------
+interface RotateImageResponse {
+  message: string;
+  status: number;
+  current_uri: string;
+}
+
+export const rotateImage = async (photoId: number, angle: number): Promise<RotateImageResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');
+
+  try {
+    const response = await axios.post<RotateImageResponse>(
+      `${BACKEND_URL}/photo/rotate`,
+      { angle },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Use the JWT token for authorization
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log("Rotate response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to rotate the image');
+  }
+};
+
+
+// ---- resize ---
+interface ResizeImageResponse {
+  message: string;
+  status: number;
+  current_uri: string;
+}
+
+
+export const resizeImage = async (photoId: number, width: number, height: number): Promise<ResizeImageResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');  // Assuming you're using Expo's SecureStore to handle JWT tokens
+
+  try {
+    const response = await axios.post<ResizeImageResponse>(
+      `${BACKEND_URL}/photo/resize`, // Make sure this URL matches your Django URL pattern
+      { width, height },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // Use the JWT token for authorization
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log("Resize response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to resize the image');
+  }
+};
+
+
+//-- flip ---
+interface FlipParams {
+  axis: 'horizontal' | 'vertical';
+}
+
+interface FlipResponse {
+  message: string;
+  status: number;
+  current_uri: string;
+}
+
+export const flipImage = async (photoId: number, axis: 'horizontal' | 'vertical'): Promise<FlipResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');
+
+  try {
+    const response = await axios.post<FlipResponse>(
+      `${BACKEND_URL}/photo/flip`, // Adjust if your URL requires a different format
+      { axis },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+
+    console.log("Flip response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to flip the image');
+  }
+};
+
+
+// brightness
+interface BrightnessParams {
+  factor: number;  // Factor by which to adjust the brightness
+}
+
+interface BrightnessResponse {
+  message: string;
+  status: number;
+  current_uri: string;
+}
+
+export const adjustBrightness = async (photoId: number, brightnessParams: BrightnessParams): Promise<BrightnessResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');  // Retrieve the JWT token from secure storage
+
+  try {
+    const response = await axios.post<BrightnessResponse>(
+      `${BACKEND_URL}/photo/brightness`,  // Ensure the endpoint matches your Django URL pattern
+      brightnessParams,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Use the JWT token for authorization
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log("Brightness response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to adjust brightness');
+  }
+};
+
+//contrast 
+interface ContrastParams {
+  factor: number;  // Factor by which to adjust the contrast
+}
+
+interface ContrastResponse {
+  message: string;
+  status: number;
+  current_uri: string;
+}
+
+
+export const adjustContrast = async (photoId: number, contrastParams: ContrastParams): Promise<ContrastResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');  // Assuming you're using Expo's SecureStore to handle JWT tokens
+
+  try {
+    const response = await axios.post<ContrastResponse>(
+      `${BACKEND_URL}/photo/contrast`,  // Ensure the endpoint matches your Django URL pattern
+      contrastParams,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Use the JWT token for authorization
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log("Contrast response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to adjust contrast');
+  }
+};
+
+
+// --- sharpness ---
+// nu cred ca este bineeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+interface SharpnessParams {
+  factor: number;  // Factor by which to adjust the sharpness
+}
+
+interface SharpnessResponse {
+  message: string;
+  status: number;
+  current_uri: string;
+}
+
+
+export const adjustSharpness = async (photoId: number, sharpnessParams: SharpnessParams): Promise<SharpnessResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');  // Retrieve the JWT token from secure storage
+
+  try {
+    const response = await axios.post<SharpnessResponse>(
+      `${BACKEND_URL}/photo/sharpness`,  // Adjust if your URL requires a different format
+      sharpnessParams,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Use the JWT token for authorization
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log("Sharpness response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to adjust sharpness');
+  }
+};
+
+
+// --- grayscale ---
+interface GrayscaleResponse {
+  message: string;
+  status: number;
+  current_uri: string;
+}
+
+
+export const convertToGrayscale = async (photoId: number): Promise<GrayscaleResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');  // Retrieve the JWT token from secure storage
+
+  try {
+    const response = await axios.post<GrayscaleResponse>(
+      `${BACKEND_URL}/photo/color`, // Make sure the endpoint URL matches your Django URL pattern
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Use the JWT token for authorization
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log("Grayscale response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to convert to grayscale');
+  }
+};
+
+// --- save changes ---
+interface SaveChangesResponse {
+  message: string;
+  status: number;
+}
+
+
+export const saveChanges = async (): Promise<SaveChangesResponse> => {
+  const token = await SecureStore.getItemAsync('jwt');  // Retrieve the JWT token from secure storage
+
+  try {
+    const response = await axios.post<SaveChangesResponse>(
+      `${BACKEND_URL}/photo/save`,  // Ensure the endpoint matches your Django URL pattern
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,  // Use the JWT token for authorization
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log("Save changes response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to save changes');
+
+  }
+};
+
+
+
+
+
+
+
 interface DismissChangesResponse {
   message: string;
   status: number;
@@ -120,3 +476,41 @@ export const dismissChanges = async (photoId: number): Promise<DismissChangesRes
     throw new Error('Failed to dismiss changes');
   }
 };
+
+
+
+// --- undo changes ---
+
+interface UndoResponse {
+  message: string;
+  status: number;
+  current_uri?: string; // This might not be present if it's an error
+}
+
+// API call to undo changes
+export const undoChanges = async (photoId: number): Promise<UndoResponse> => {
+  const token = await SecureStore.getItemAsync('jwt'); // Assuming you're using Expo's SecureStore for token management
+
+  try {
+    const response = await axios.post<UndoResponse>(
+      `${BACKEND_URL}/photo/undo`, // Ensure this matches your Django URL for undoing changes
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${token}`, // JWT token for authorization
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+    console.log("Undo response:", response.data);
+    return response.data;
+  } catch (error: any) {
+    if (error.response && error.response.data) {
+      throw error.response.data;
+    }
+    throw new Error('Failed to undo changes');
+  }
+};
+
+
+

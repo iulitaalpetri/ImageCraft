@@ -27,8 +27,6 @@ urlpatterns = [
     path("photo/", include("photo.urls")),
     path("detected_face/", include("detected_face.urls")),
     #path("object/", include("detected_object.urls")),
-]
+]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

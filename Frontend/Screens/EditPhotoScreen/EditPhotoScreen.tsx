@@ -36,6 +36,7 @@ const EditPhotoScreen = ({ route }) => {
             const response = await getCurrentUri();
             
             setCurrentUri(response.current_uri);
+            console.log("current uri",response.current_uri);
         } catch (error) {
             Alert.alert('Error', 'Failed to fetch the current image.');
         }

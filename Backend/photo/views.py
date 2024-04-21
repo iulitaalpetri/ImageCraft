@@ -40,7 +40,19 @@ def getAllPhotos(request):
     user = User.objects.filter(id=payload["id"]).first()
     photos = user.photos.all()
     serializer = PhotoSerializer(photos, many=True)
+    for photo in serializer.data:
+        if photo['image'] is not None:
+            img_path = photo['image']
+            media_root = settings.MEDIA_ROOT.replace('\\', '/')
+            image_path = img_path.replace('\\', '/')
+            if image_path.startswith(media_root):
+                relative_path = image_path[len(media_root):]
+                web_accessible_url = settings.MEDIA_URL + relative_path.lstrip('/')
+                photo['image'] = request.build_absolute_uri(web_accessible_url) 
     return Response(serializer.data)
+
+
+
 
 
 @api_view(["POST"])

@@ -58,6 +58,39 @@ export const uploadPhoto = async (photoData: PhotoData): Promise<PhotoResponse> 
   }
 };
 
+// ----- delete photo ----
+// API call to delete a photo
+interface DeletePhotoResponse {
+  message: string;
+  status: number;
+}
+
+export const deletePhoto = async (photoId: number): Promise<DeletePhotoResponse> => {
+  const token = await SecureStore.getItemAsync('jwt'); // Retrieve the JWT token from secure storage
+
+  try {
+      const response = await axios.post<DeletePhotoResponse>(
+          `${BACKEND_URL}/photo/delete/${photoId}`,  // Ensure this matches your actual API endpoint
+          {},
+          {
+              headers: {
+                  Authorization: `Bearer ${token}`,  // Use the JWT token for authorization
+                  'Content-Type': 'application/json',
+              },
+          }
+      );
+      console.log("Delete response:", response.data);
+      return response.data;
+  } catch (error: any) {
+      // Handle errors
+      if (error.response && error.response.data) {
+          throw error.response.data;
+      }
+      throw new Error('Failed to delete the photo');
+  }
+};
+
+
 
 // --- edit ---
 
@@ -514,3 +547,57 @@ export const undoChanges = async (photoId: number): Promise<UndoResponse> => {
 
 
 
+// --- gallery apis ----
+interface Photo {
+  id: number;
+  image: string | null;
+  date: string;
+  detectedObjects: any[];
+  detectedFaces: any[];
+}
+
+interface PhotosResponse {
+  photos: Photo[];
+}
+
+// Fetch all photos associated with the user
+export const getAllPhotos = async (): Promise<Photo[]> => {
+  const token = await SecureStore.getItemAsync('jwt'); // Retrieve the JWT token from secure storage
+
+  try {
+    const response = await axios.get<Photo[]>(`${BACKEND_URL}/photo/all`, {
+      headers: {
+        Authorization: `Bearer ${token}`, // Use the JWT token for authorization
+      },
+    });
+
+    console.log("Photos response:", response.data);
+
+    // Assuming the API directly returns an array of Photo objects
+    // If the response structure is different, you'll need to adjust the mapping accordingly
+    return response.data.map(photo => ({
+      ...photo,
+      // add backend url to the image path
+      image: `${BACKEND_URL}${photo.image}`,
+      detectedObjects:  [],
+      detectedFaces:  []
+    }));
+  }
+  catch (error: any) {
+    console.error('Error fetching photos:', error);
+    // Improved error handling
+    if (axios.isAxiosError(error)) {
+      // Handling errors returned from Axios specifically
+      if (error.response) {
+        // The request was made and the server responded with a status code that falls out of the range of 2xx
+        console.error('Error data:', error.response.data);
+        throw new Error(`Failed to fetch photos: ${error.response.status} ${error.response.statusText}`);
+      } else if (error.request) {
+        // The request was made but no response was received
+        throw new Error('No response received from the server');
+      }
+    }
+    // Throw a generic error message if the error format is not as expected
+    throw new Error('Failed to fetch photos');
+  }
+};

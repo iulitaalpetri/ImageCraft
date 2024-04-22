@@ -1,8 +1,8 @@
-// LoginScreen.tsx
+
 import React, { useState } from 'react';
 import { View, TextInput, TouchableOpacity, Text, ScrollView, Alert } from 'react-native';
 import styles from './LoginScreen.styles';
-import { loginUser } from '../../src/api/auth_api'; // Update the path as necessary
+import { loginUser } from '../../src/api/auth_api'; 
 import Logo from '../../components/Logo/Logo';
 import LoadingOverlay from '../../components/LoadingPage/LoadingPage';
 

@@ -25,8 +25,8 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   image: {
-    width: width - 40, // Subtracting margins
-    height: 200, // Fixed height for images
+    width: width - 40 - 20, // Subtract both padding and margin values from the total width
+    height: 200,
     borderRadius: 8,
     resizeMode: 'cover'
   },
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background for the modal
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // Semi-transparent background
   },
   modalView: {
     margin: 20,

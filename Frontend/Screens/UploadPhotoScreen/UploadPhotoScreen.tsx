@@ -19,7 +19,7 @@ const UploadPhotoScreen = () => {
       console.log("Image Picker Result:", result); // Check the entire result object
 
 
-      if (!result.cancelled && result.assets && result.assets.length > 0) {
+      if (!result.canceled && result.assets && result.assets.length > 0) {
         const uri = result.assets[0].uri;
         console.log("Image URI:", uri); // Ensure this logs correctly
         navigation.navigate('PhotoPreviewScreen', { photoUri: uri });

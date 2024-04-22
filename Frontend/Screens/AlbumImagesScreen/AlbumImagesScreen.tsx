@@ -1,14 +1,15 @@
-import React, {useEffect, useState, useCallback} from 'react';
-import { View, Text, Image, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import styles from './AlbumImagesScreen.styles';
+import React, { useEffect, useState, useCallback } from 'react';
+import { View, Image, FlatList, StyleSheet, TouchableOpacity, Alert } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { getAllPhotos } from '../../src/api/photo_api';
-import { useFocusEffect } from '@react-navigation/native'; // Import useFocusEffect
+import styles from './AlbumImagesScreen.styles';
 
-const AlbumDetailsScreen = ({ route, navigation }) => {
-  const { albumId, photo_list } = route.params; // Using albumId from params
+const AlbumDetailsScreen = ({ route }) => {
+  const { albumId } = route.params;
   const [photos, setPhotos] = useState([]);
+  const navigation = useNavigation();
 
-  // Fetch photos and update state
   const fetchPhotos = useCallback(() => {
     if (albumId === "My Photos") {
       getAllPhotos().then(fetchedPhotos => {
@@ -19,10 +20,11 @@ const AlbumDetailsScreen = ({ route, navigation }) => {
     }
   }, [albumId]);
 
-  // Use useFocusEffect to fetch photos whenever the screen gains focus
-  useFocusEffect(() => {
-    fetchPhotos();
-  });
+  useFocusEffect(
+    useCallback(() => {
+      fetchPhotos();
+    }, [fetchPhotos])
+  );
 
   const renderPhoto = ({ item }) => (
     <TouchableOpacity
@@ -35,12 +37,15 @@ const AlbumDetailsScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>{albumId}</Text>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
       <FlatList
         data={photos}
         renderItem={renderPhoto}
-        keyExtractor={item => item.id.toString()}  // Ensure each photo has a unique `id`
+        keyExtractor={item => item.id.toString()}
         contentContainerStyle={styles.list}
+        numColumns={3}  // Display three images per row
       />
     </View>
   );

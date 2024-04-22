@@ -123,8 +123,6 @@ def deletePhoto(request, id):
 
 
 
-
-
 # ---------------- edit -------------------------
 @api_view(["POST"])
 def start_edit_session(request, id):

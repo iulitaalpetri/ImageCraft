@@ -37,17 +37,14 @@ const TakePhotoScreen = () => {
         <View style={styles.container}>
             {isFocused && (
                 <Camera ref={cameraRef} style={styles.camera} type={type}>
+                    <TouchableOpacity style={styles.flipButton} onPress={() => {
+                        setType(type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back);
+                    }}>
+                        <Image source={require('../../assets/FlipCamera.png')} style={styles.icon} />
+                    </TouchableOpacity>
                     <View style={styles.bottomBar}>
-                        <TouchableOpacity style={styles.button} onPress={() => alert('Navigate to another screen')}>
-                            <Image source={require('../../assets/galerie.png')} style={styles.icon} />
-                        </TouchableOpacity>
                         <TouchableOpacity style={styles.button} onPress={takePhotoAndNavigate}>
                             <Image source={require('../../assets/Camera.png')} style={styles.icon} />
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.button} onPress={() => {
-                            setType(type === Camera.Constants.Type.back ? Camera.Constants.Type.front : Camera.Constants.Type.back);
-                        }}>
-                            <Image source={require('../../assets/FlipCamera.png')} style={styles.icon} />
                         </TouchableOpacity>
                     </View>
                 </Camera>

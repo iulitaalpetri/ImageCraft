@@ -9,24 +9,33 @@ const styles = StyleSheet.create({
     },
     bottomBar: {
         flexDirection: 'row',
-        justifyContent: 'space-around',
+        justifyContent: 'center',
         position: 'absolute',
-        bottom: 0,
+        bottom: -15, 
         left: 0,
         right: 0,
-        padding: 10,
-        // height
-        height: 110,
+        padding: 15, 
+        height: 110, 
     },
     button: {
         width: 60,
         height: 50,
         justifyContent: 'center',
         alignItems: 'center',
-        backgroundColor: 'transparent', // Semi-transparent
+        backgroundColor: 'transparent',
+        
+    },
+    flipButton: {
+        position: 'absolute',
+        top: 20,
+        right: 20,
+        width: 50,
+        height: 50,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     icon: {
-        width: '95%',
+        width: '100%',
         height: '100%',
     },
 });

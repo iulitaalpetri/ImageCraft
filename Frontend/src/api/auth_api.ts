@@ -9,7 +9,7 @@ import {TOKEN_KEY} from "../utils/storage-handler";
 
 
 
-const BACKEND_URL = "http://:8000";
+const BACKEND_URL = "http:/:8000";
 
 
 

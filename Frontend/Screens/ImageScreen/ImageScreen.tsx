@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { View, Image, StyleSheet, FlatList, Dimensions, TouchableOpacity, Modal, Text, Button, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { deletePhoto, startEditSession } from '../../src/api/photo_api';
+import { Ionicons } from '@expo/vector-icons';
+
 
 const { width, height } = Dimensions.get('window');
 
@@ -49,6 +51,9 @@ const ImageScreen = ({ route, navigation }) => {
 
   return (
     <View style={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+        <Ionicons name="arrow-back" size={24} color="black" />
+      </TouchableOpacity>
       <FlatList
         horizontal
         pagingEnabled
@@ -59,46 +64,15 @@ const ImageScreen = ({ route, navigation }) => {
         getItemLayout={(data, index) => ({ length: width, offset: width * index, index })}
         showsHorizontalScrollIndicator={false}
       />
-      <TouchableOpacity style={styles.deleteButton} onPress={() => setShowDeleteModal(true)}>
-        <MaterialIcons name="delete" size={28} color="red" />
-      </TouchableOpacity>
-
-      <TouchableOpacity style={styles.editButton} onPress={handleStartEdit}>
-        <MaterialIcons name="edit" size={28} color="blue" />
-      </TouchableOpacity>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showDeleteModal}
-        onRequestClose={() => setShowDeleteModal(false)}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Are you sure you want to delete this photo?</Text>
-            <Button title="Yes" onPress={handleDelete} color="red" />
-            <Button title="No" onPress={() => setShowDeleteModal(false)} color="blue" />
-          </View>
-        </View>
-      </Modal>
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={showNoPhotosModal}
-        onRequestClose={() => {
-          setShowNoPhotosModal(false);
-          navigation.goBack(); // Go back after closing the modal
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>You have no more photos.</Text>
-            <Button title="OK" onPress={() => {
-              setShowNoPhotosModal(false);
-              navigation.goBack();
-            }} color="blue" />
-          </View>
-        </View>
-      </Modal>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.actionButton} onPress={() => setShowDeleteModal(true)}>
+          <MaterialIcons name="delete" size={28} color="white" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.actionButton} onPress={handleStartEdit}>
+          <MaterialIcons name="edit" size={28} color="white" />
+        </TouchableOpacity>
+      </View>
+      {/* Modals and other components */}
     </View>
   );
 };
@@ -112,23 +86,35 @@ const styles = StyleSheet.create({
     height: height,
     justifyContent: 'center',
     alignItems: 'center',
+    top: 10
   },
   fullImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'contain',
   },
-  deleteButton: {
-    position: 'absolute',
-    top: 45,
-    right: 20,
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    padding: 10,
+    bottom: 20
+  },
+  actionButton: {
+    flex: 1,
+    alignItems: 'center',
+    marginHorizontal: 10,
+    paddingVertical: 10,
+    borderRadius: 5,
+    backgroundColor: '#0c0c33', // Slightly darker grey for the button background
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   centeredView: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 22,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: '',
   },
   modalView: {
     margin: 20,
@@ -156,8 +142,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#DDD', // optional: style for the button background
   },
   buttonText: {
-    color: '#FFF',
-  }
+    color: 'white', // Ensure text is white
+    marginLeft: 5, // Give some space between the icon and the text
+  },
+  backButton: {
+    position: 'absolute',
+    top: 60, // Adjust as needed for spacing from the top
+    left: 10, // Adjust as needed for spacing from the left
+    padding: 10,
+  },
 });
 
 export default ImageScreen;

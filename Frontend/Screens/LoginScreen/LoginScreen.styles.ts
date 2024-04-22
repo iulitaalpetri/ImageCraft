@@ -1,4 +1,3 @@
-// LoginScreen.styles.ts
 import { StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
@@ -17,7 +16,7 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   button: {
-    backgroundColor: '#0c0c33', // Adjust this color if necessary to match your app's theme
+    backgroundColor: '#0c0c33', 
     paddingVertical: 15,
     paddingHorizontal: 20,
     borderRadius: 25,
@@ -40,8 +39,8 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 14,
     marginBottom: 5,
-    alignSelf: 'center', // Changed to center align with the inputs better
-    width: '80%', // Match the width of the input fields
+    alignSelf: 'center', 
+    width: '80%', 
   },
 });
 

@@ -1,54 +1,44 @@
-// NavBar.tsx
+// NavBar.js
 import React from 'react';
-import { View, TouchableOpacity, Text , TouchableHighlight} from 'react-native';
-import styles from './NavBar.styles';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import GalleryScreen from '../../Screens/GalleryScreen/GalleryScreen';
+import TakePhotoScreen from '../../Screens/TakePhotoScreen/TakePhotoScreen';
+import UploadPhotoScreen from '../../Screens/UploadPhotoScreen/UploadPhotoScreen';
+import FriendsScreen from '../../Screens/FriendsScreen/FriendsScreen';
 import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
-import { faCamera, faUpload, faImages, faUserFriends } from '@fortawesome/free-solid-svg-icons';
-import { useRoute } from '@react-navigation/native';
+import { faCamera, faImages, faUpload, faUserFriends } from '@fortawesome/free-solid-svg-icons';
 
+const Tab = createBottomTabNavigator();
 
-interface NavBarProps {
-  navigation: any;
-  activeScreen: string;
-}
-
-const NavBar: React.FC<NavBarProps> = ({ navigation, activeScreen }) => {
-
-    const route = useRoute();
-
-    const isActive = (screenName) => route.name === screenName;
-
-
-    const getButtonStyle = (screen: string) => [
-        styles.iconButton,
-        activeScreen === screen ? styles.activeButton : styles.inactiveButton,
-      ];
-    
-      // Helper function to determine icon and text style
-      const getIconTextStyle = (screen: string) => [
-        styles.icon,
-        isActive(screen) ? styles.active : styles.inactive,
-      ];
+const NavBar = () => {
   return (
-    <View style={styles.container}>
-      <TouchableOpacity style={getButtonStyle('GalleryScreen')} onPress={() => navigation.navigate('GalleryScreen')}>
-        <FontAwesomeIcon icon={faImages} style={getIconTextStyle('GalleryScreen')} />
-        <Text style={getIconTextStyle('GalleryScreen')}>Gallery</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={getButtonStyle('TakePhotoScreen')} onPress={() => navigation.navigate('TakePhotoScreen')}>
-        <FontAwesomeIcon icon={faCamera} style={getIconTextStyle('TakePhotoScreen')} />
-        <Text style={getIconTextStyle('TakePhotoScreen')}>Camera</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={getButtonStyle('UplaodPhotoScreen')} onPress={() => navigation.navigate('UploadPhotoScreen')}>
-        <FontAwesomeIcon icon={faUpload} style={getIconTextStyle('UploadPhotoScreen')} />
-        <Text style={getIconTextStyle('UploadPhotoScreen')}>Upload Photo</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={getButtonStyle('FriendsScreen')} onPress={() => navigation.navigate('FriendsScreen')}>
-        <FontAwesomeIcon icon={faUserFriends} style={getIconTextStyle('FriendsScreen')} />
-        <Text style={getIconTextStyle('FriendsScreen')}>Friends</Text>
-      </TouchableOpacity>
-    </View>
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        headerShown: false, // This hides the header
+        tabBarIcon: ({ color, size }) => {
+          let iconName;
+          if (route.name === 'GalleryScreen') iconName = faImages;
+          else if (route.name === 'TakePhotoScreen') iconName = faCamera;
+          else if (route.name === 'UploadPhotoScreen') iconName = faUpload;
+          else if (route.name === 'FriendsScreen') iconName = faUserFriends;
+          return <FontAwesomeIcon icon={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#0c0c33',
+        tabBarInactiveTintColor: 'gray',
+        tabBarStyle: { height: 70 },
+        tabBarLabelStyle: {
+          fontSize: 12,
+          paddingBottom: 6,
+        },
+      })}
+    >
+      <Tab.Screen name="GalleryScreen" component={GalleryScreen} options={{ title: 'Gallery' }} />
+      <Tab.Screen name="TakePhotoScreen" component={TakePhotoScreen} options={{ title: 'Camera' }} />
+      <Tab.Screen name="UploadPhotoScreen" component={UploadPhotoScreen} options={{ title: 'Upload' }} />
+      <Tab.Screen name="FriendsScreen" component={FriendsScreen} options={{ title: 'Friends' }} />
+    </Tab.Navigator>
   );
 };
 
 export default NavBar;
+ 

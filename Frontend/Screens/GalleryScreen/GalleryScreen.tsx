@@ -61,7 +61,6 @@ const GalleryScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <NavBar navigation={navigation} />
       <FlatList
         data={albums}
         renderItem={renderAlbum}

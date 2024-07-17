@@ -1,0 +1,17 @@
+{
+  "expo": {
+    "name": "Frontend",
+    "slug": "Frontend",
+    "version": "1.0.0",
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "scheme": "yourcustomscheme",
+    "plugins": [
+      "expo-secure-store"
+    ],
+    "android": {
+      "package": "com.anonymous.Frontend"
+    }
+  }
+}
